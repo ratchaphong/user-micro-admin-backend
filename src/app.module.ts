@@ -1,0 +1,17 @@
+import { Module } from '@nestjs/common';
+import { UserModule } from './user/user.module';
+import { PrismaModule } from './prisma/prisma.module';
+import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true, // 👈 ทำให้ใช้ได้ทั้งแอป
+    }),
+    ScheduleModule.forRoot(),
+    UserModule,
+    PrismaModule,
+  ],
+})
+export class AppModule {}

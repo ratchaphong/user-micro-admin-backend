@@ -1,0 +1,34 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"] // 👈 เปิดใช้งาน multiSchema
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["user"] // 👈 ใช้ schema ชื่อ "user"
+}
+
+model User {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  name        String
+  password    String
+  createdAt   DateTime  @default(now())
+  avatar      String?
+  phoneNumber String?
+  address     String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+  role        Role      @default(USER)
+
+  @@schema("user")
+}
+
+enum Role {
+  USER
+  STAFF
+  ADMIN
+
+  @@schema("user")
+}
