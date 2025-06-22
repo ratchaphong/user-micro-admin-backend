@@ -78,6 +78,21 @@ export class UserController {
     return plainToInstance(UserEntity, user);
   }
 
+  @Post('create-admin')
+  @ApiOperation({
+    summary: 'Create new admin user (ADMIN only)',
+    description: `Allows ADMIN to create another user with ADMIN role.  
+  Requires authentication.`,
+  })
+  @ApiCreatedResponse({
+    description: 'Admin user successfully created',
+    type: UserEntity,
+  })
+  async createAdminUser(@Body() dto: CreateUserDto) {
+    const user = await this.userService.createWithRole(dto);
+    return plainToInstance(UserEntity, user);
+  }
+
   @Post('login')
   @ApiOperation({
     summary: 'Login user',

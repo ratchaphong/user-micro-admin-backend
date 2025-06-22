@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { Prisma, Role, User } from '@prisma/client';
+import { $Enums, Prisma, Role, User } from '@prisma/client';
 import { UserSearchDto } from './dto/user-search.dto';
 import { UserEntity } from './entities/user.entity';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
@@ -71,6 +71,17 @@ export class UserService {
     const hashed = await bcrypt.hash(dto.password, 10);
     return this.prisma.user.create({
       data: { ...dto, password: hashed },
+    });
+  }
+
+  async createWithRole(dto: CreateUserDto) {
+    const hashed = await bcrypt.hash(dto.password, 10);
+    return this.prisma.user.create({
+      data: {
+        ...dto,
+        password: hashed,
+        role: $Enums.Role.ADMIN,
+      },
     });
   }
 
