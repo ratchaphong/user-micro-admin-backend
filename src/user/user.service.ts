@@ -48,6 +48,7 @@ export class UserService {
           mode: Prisma.QueryMode.insensitive,
         },
       }),
+      isDeleted: false,
     };
 
     const take = parseInt(perPage);

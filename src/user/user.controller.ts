@@ -180,6 +180,34 @@ export class UserController {
     return plainToInstance(UserEntity, user);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Patch(':id/profile')
+  @ApiOperation({ summary: 'Update any user profile (ADMIN only)' })
+  @ApiOkResponse({ description: 'User profile updated', type: UserEntity })
+  async adminUpdateUserProfile(
+    @Param('id') id: string,
+    @Body() dto: UpdateUserProfileDto,
+    @Req() req: any,
+  ): Promise<UserEntity> {
+    console.log('🔥 req.user:', req.user);
+    const currentUserId = req.user?.id;
+
+    if (!currentUserId) {
+      throw new UnauthorizedException();
+    }
+
+    // 🔍 ดึงข้อมูล user ปัจจุบันจาก DB
+    const currentUser = await this.userService.findOne(currentUserId);
+    if (!currentUser || currentUser.role === $Enums.Role.USER) {
+      throw new ForbiddenException('Only ADMIN can update other user profiles');
+    }
+
+    // ✅ ดำเนินการอัปเดตโปรไฟล์ของ user อื่น
+    const user = await this.userService.updateProfile(id, dto);
+    return plainToInstance(UserEntity, user);
+  }
+
   @Get(':id')
   @ApiOperation({
     summary: 'Get user by ID',
