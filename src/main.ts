@@ -3,16 +3,22 @@ import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // ✅ เพิ่มตรงนี้ — limit body size ก่อนเริ่มรัน
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
   app.enableCors({
     origin: '*',
     credentials: true,
   });
-  const configService = app.get(ConfigService); // ✅ ใช้ ConfigService อ่านค่า .env
 
-  // ✅ ตั้งค่า Swagger
+  const configService = app.get(ConfigService);
+
   const config = new DocumentBuilder()
     .setTitle('User Service')
     .setDescription('API for managing users')
@@ -26,7 +32,6 @@ async function bootstrap() {
     },
   });
 
-  // ✅ ตั้งค่า RabbitMQ Microservice
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
@@ -41,6 +46,6 @@ async function bootstrap() {
   await app.startAllMicroservices();
 
   const port = configService.get<number>('PORT') ?? 3001;
-  await app.listen(port, '0.0.0.0'); // ✅ ฟังทุก IP → ใช้ได้ทั้ง Docker และ Local
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
