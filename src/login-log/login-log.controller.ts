@@ -3,9 +3,11 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Patch,
   Post,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -22,10 +24,15 @@ import { JwtAuthGuard } from 'src/user/jwt-auth.guard';
 import { UserLoginLogsEntity } from './entities/user-login-logs.entity';
 import { CreateLoginLogDto } from './dto/create-login-log.dto';
 import { DeleteLoginLogsResponseDto } from './dto/delete-login-logs.response';
+import { PdfReportService } from 'src/pdf-report/pdf-report.service';
+import { Response } from 'express';
 
 @Controller('login-logs')
 export class LoginLogController {
-  constructor(private readonly loginLogService: LoginLogService) {}
+  constructor(
+    private readonly loginLogService: LoginLogService,
+    private readonly pdfReportService: PdfReportService,
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @Get()
@@ -128,5 +135,43 @@ export class LoginLogController {
   })
   async cleanupOldLogs(): Promise<DeleteLoginLogsResponseDto> {
     return this.loginLogService.deleteOldLogs();
+  }
+
+  @Get('/report/pdf')
+  @ApiOperation({
+    summary: 'Generate PDF report of first login each user (this month)',
+  })
+  @ApiOkResponse({
+    description: 'PDF file of first login report',
+    content: {
+      'application/pdf': {
+        schema: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  async generatePdfReport(@Res() res: Response) {
+    const logs = await this.loginLogService.getFirstLoginEachUserInMonth();
+    console.log(logs);
+    const pdf = await this.pdfReportService.generateLoginReport(logs);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename="monthly-login-report.pdf"',
+    });
+
+    return res.send(pdf);
+  }
+
+  @Get('/report/preview')
+  @ApiOperation({
+    summary: 'Preview HTML report of first login each user (this month)',
+  })
+  @Header('Content-Type', 'text/html; charset=UTF-8')
+  async previewHtmlReport(): Promise<string> {
+    const logs = await this.loginLogService.getFirstLoginEachUserInMonth();
+    return this.pdfReportService.buildLoginReportHtml(logs);
   }
 }

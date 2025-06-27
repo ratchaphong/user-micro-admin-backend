@@ -72,34 +72,31 @@ export class LoginLogService {
     const start = startOfMonth(new Date());
     const end = endOfMonth(new Date());
 
-    const results = await this.prisma.loginLog.groupBy({
-      by: ['userId'],
+    // ดึงข้อมูลทั้งหมดของเดือนนี้
+    const logs = await this.prisma.loginLog.findMany({
       where: {
         loginAt: {
           gte: start,
           lte: end,
         },
       },
-      _min: {
-        loginAt: true,
+      orderBy: {
+        loginAt: 'desc', // เพื่อให้ใหม่สุดมาก่อน
       },
+      include: { user: true },
     });
 
-    // ใช้ผลลัพธ์ที่ได้มา join หา log record จริง
-    const logs = await Promise.all(
-      results
-        .filter((r) => r._min.loginAt !== null)
-        .map((r) =>
-          this.prisma.loginLog.findFirst({
-            where: {
-              userId: r.userId,
-              loginAt: r._min.loginAt as Date,
-            },
-          }),
-        ),
-    );
+    // ใช้ Map เพื่อเก็บเฉพาะล่าสุดของแต่ละวัน ต่อ user
+    const latestPerUserPerDay = new Map<string, (typeof logs)[0]>();
 
-    return logs;
+    for (const log of logs) {
+      const key = `${log.userId}_${log.loginAt.toISOString().split('T')[0]}`; // เช่น "u123_2025-06-27"
+      if (!latestPerUserPerDay.has(key)) {
+        latestPerUserPerDay.set(key, log); // ✅ เก็บรายการแรกที่เจอของวันนั้น (คือรายการล่าสุด)
+      }
+    }
+
+    return Array.from(latestPerUserPerDay.values());
   }
 
   async updateLatestLogoutTime(userId: string) {
