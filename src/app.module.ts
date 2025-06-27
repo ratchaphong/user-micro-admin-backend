@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { LoginLogModule } from './login-log/login-log.module';
+import { MailService } from './mail/mail.service';
 
 @Module({
   imports: [
@@ -15,5 +16,6 @@ import { LoginLogModule } from './login-log/login-log.module';
     LoginLogModule,
     PrismaModule,
   ],
+  providers: [MailService],
 })
 export class AppModule {}
