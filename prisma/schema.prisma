@@ -10,19 +10,32 @@ datasource db {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
+  id          String     @id @default(uuid())
+  email       String     @unique
   name        String
   password    String
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
   avatar      String?
   phoneNumber String?
   address     String?
   deletedAt   DateTime?
-  isDeleted   Boolean   @default(false)
-  role        Role      @default(USER)
+  isDeleted   Boolean    @default(false)
+  role        Role       @default(USER)
+  LoginLog    LoginLog[]
 
   @@schema("user")
+}
+
+model LoginLog {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  loginAt   DateTime  @default(now())
+  logoutAt  DateTime?
+  ipAddress String?
+  userAgent String?
+
+  @@schema("user") // อยู่ใน schema เดียวกับ User
 }
 
 enum Role {
