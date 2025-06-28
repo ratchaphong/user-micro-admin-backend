@@ -10,5 +10,6 @@ import { MailService } from 'src/mail/mail.service';
   imports: [PdfReportModule],
   controllers: [LoginLogController],
   providers: [LoginLogCronService, LoginLogService, JwtStrategy, MailService],
+  exports: [LoginLogService],
 })
 export class LoginLogModule {}

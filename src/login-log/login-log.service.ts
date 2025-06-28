@@ -5,18 +5,13 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { CreateLoginLogDto } from './dto/create-login-log.dto';
 
 @Injectable()
 export class LoginLogService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async createLoginLog(data: {
-    userId: string;
-    ipAddress?: string;
-    userAgent?: string;
-    success?: boolean;
-    failReason?: string;
-  }) {
+  async createLoginLog(data: CreateLoginLogDto & { userId: string }) {
     return this.prisma.loginLog.create({
       data: {
         userId: data.userId,

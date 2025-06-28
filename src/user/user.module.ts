@@ -6,6 +6,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { UserCronService } from './user-cron.service';
+import { LoginLogModule } from 'src/login-log/login-log.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { UserCronService } from './user-cron.service';
       secret: process.env.JWT_SECRET || 'secret-key',
       signOptions: { expiresIn: '1d' },
     }),
+    LoginLogModule,
   ],
   controllers: [UserController],
   providers: [UserService, UserCronService, JwtStrategy],

@@ -8,12 +8,14 @@ import { $Enums, Prisma, Role, User } from '@prisma/client';
 import { UserSearchDto } from './dto/user-search.dto';
 import { UserEntity } from './entities/user.entity';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
+import { LoginLogService } from 'src/login-log/login-log.service';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private loginLogService: LoginLogService,
   ) {}
 
   // async create(dto: CreateUserDto) {
@@ -96,6 +98,8 @@ export class UserService {
     const access_token = await this.jwtService.signAsync(payload);
     console.log(payload);
     console.log(access_token);
+    await this.loginLogService.createLoginLog({ userId: user.id });
+
     return { access_token };
   }
 
